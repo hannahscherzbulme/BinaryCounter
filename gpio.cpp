@@ -1,63 +1,46 @@
+#include <QDebug>
 #include <lgpio.h>
 #include "gpio.h"
 #include "config.h"
 
-Gpio::Gpio(QObject *parent) : QObject(parent)
+gpio::gpio(QObject *parent) : QObject(parent)
 {
     m_handle = lgGpiochipOpen(CHIP); // get a handle to the GPIO
-    if (m_handle < 0)
-        throw lguErrorText(m_handle);
     int init_level = 0;
     for (auto pin : LEDS) // Outputs
-        lgGpioClaimOutput(m_handle, LFLAGS, pin, init_level);
-    for (auto pin : BUTTONS) {// Inputs
-        int error = lgGpioClaimInput(m_handle, LFLAGS, pin);
-        if (error < 0)
-            throw lguErrorText(error);
-        m_oldstates.append(false);
+        lgGpioClaimOutput(m_handle, LFLAGS, pin, init_level); 
+    for (auto pin : BUTTONS) // Inputs
+    {
+        lgGpioClaimInput(m_handle, LFLAGS, pin);
+        m_oldStates.push_back((bool)lgGpioRead(m_handle, pin)); // ensures proper edge-detection from point of initialization on
     }
 }
 
-Gpio::~Gpio()
+gpio::~gpio()
 {
     // Cleanup GPIO
     int init_level = 0;
     for (auto pin : LEDS)
         lgGpioWrite(m_handle, pin, init_level);
     lgGpiochipClose(m_handle);
+    qDebug() << "bye";
 }
 
-// Write to pins
-void Gpio::set(int pin, bool value)
+void gpio::set(int pin, bool value)
 {
-    int result = lgGpioWrite(m_handle, pin, value);
-    if (result < 0)
-        throw lguErrorText(result);
+    lgGpioWrite(m_handle, pin, value);
 }
 
-
-// Read pin state
-bool Gpio::get(int pin)
+bool gpio::get(int pin, bool edge)
 {
-    int result = lgGpioRead(m_handle, pin);
-    if (result < 0)
-        throw lguErrorText(result);
-    return result;
-}
-
-// Read pin state
-bool Gpio::isActivated(int pin)
-{
-    int result = lgGpioRead(m_handle, pin);
-    if (result < 0)
-        throw lguErrorText(result);
-
-    // rising slope detection
-    bool rising = false;
-    int index = BUTTONS.indexOf(pin);
-    if (!result > m_oldstates[index]) // !result weil gedrueckt = LO
-        rising = true;
-
-    m_oldstates[index] = !result;
-    return rising;
+    unsigned int idx = BUTTONS.indexOf(pin);
+    bool pinState = lgGpioRead(m_handle, pin);
+    bool out = pinState;
+    if (edge == true) {
+        out = false;
+        qDebug() << m_oldStates[idx] << " " << pinState;
+        if(m_oldStates[idx] && !pinState) out = true;
+        m_oldStates[idx] = pinState;
+    }
+    return out;
 }

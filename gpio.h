@@ -3,15 +3,16 @@
 
 #include <QObject>
 
-class Gpio : public QObject
+class gpio : public QObject
 {
     Q_OBJECT
 public:
-    explicit Gpio(QObject *parent = nullptr); // constructor
-    ~Gpio(); // destructor for clean-up
+    explicit gpio(QObject *parent = nullptr); // constructor
+    ~gpio(); // destructor for clean-up
+
     void set(int pin, bool value);
-    bool get(int pin);
-    bool isActivated(int pin);
+    void set(unsigned int pattern);
+    bool get(int pin, bool edge = false);
 
 signals:
 
@@ -19,8 +20,7 @@ public slots:
 
 private:
     int m_handle;
-    QList<bool> m_oldstates;
-
+    QList<bool> m_oldStates;
 };
 
 #endif // GPIO_H

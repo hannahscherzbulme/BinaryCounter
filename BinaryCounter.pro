@@ -1,6 +1,6 @@
 #-------------------------------------------------
 #
-# Project created by QtCreator 2022-04-20T14:39:52
+# Project created by QtCreator 2022-02-09T10:16:35
 #
 #-------------------------------------------------
 
@@ -8,7 +8,7 @@ QT       += core gui
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-TARGET = BinaryCounter
+TARGET = ButtonMonitor
 TEMPLATE = app
 
 # The following define makes your compiler emit warnings if you use
@@ -26,13 +26,13 @@ CONFIG += c++11
 
 SOURCES += \
         main.cpp \
-        counterwidget.cpp \
-    gpio.cpp
+        widget.cpp \
+        gpio.cpp
 
 HEADERS += \
-        counterwidget.h \
-    config.h \
-    gpio.h
+        widget.h \
+        gpio.h \
+    config.h
 
 LIBS += -llgpio
 
